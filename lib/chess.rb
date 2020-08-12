@@ -1,8 +1,13 @@
+require_relative "player.rb"
 
 class Chess
     def initialize(player1, player2)
-        @p1 = player1
-        @p2 = player2
-        puts "Hello world"
+        if(player1.is_a?(Player) && player2.is_a?(Player))
+            @p1 = player1
+            @p2 = player2
+            puts "Hello world"
+        else
+            raise "The players passed to chess object must be a Player object"
+        end
     end
 end
