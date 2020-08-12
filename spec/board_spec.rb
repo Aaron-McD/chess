@@ -27,4 +27,11 @@ describe "Board" do
             expect(board[0][1]).to eq("hello")
         end
     end
+
+    describe "#reset!" do
+        it "resets the entire board back to all nil values" do
+            board.reset!
+            expect(board.board.all? { |array| array.all?{ |item| item == nil } } ).to eq(true)
+        end
+    end
 end

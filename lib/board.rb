@@ -15,4 +15,15 @@ class Board
     def [](index)
         return @board[index]
     end
+
+    def reset!
+        @board = []
+        8.times do 
+            arry = []
+            8.times do
+                arry.push(nil)
+            end
+            @board.push(arry)
+        end
+    end
 end
