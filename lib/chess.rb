@@ -1,5 +1,6 @@
 require_relative "player.rb"
 require_relative "board.rb"
+require_relative "piece.rb"
 class Chess
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))

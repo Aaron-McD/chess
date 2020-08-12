@@ -15,6 +15,6 @@ until game.check_mate
 end
 =end
 
-board = Board.new
+pawn = Pawn.new(8,"a", false)
 
-puts board
+p pawn.show_moveset
