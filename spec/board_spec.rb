@@ -16,4 +16,15 @@ describe "Board" do
             expect(board.board.all? { |array| array.all?{ |item| item == nil } } ).to eq(true)
         end
     end
+
+    describe "#[]" do
+        it "returns the object in that position" do
+            expect(board[0].class).to eq(Array)
+        end
+
+        it "works with the 2D arrary to return the object in the nested array" do
+            board[0][1] = "hello"
+            expect(board[0][1]).to eq("hello")
+        end
+    end
 end

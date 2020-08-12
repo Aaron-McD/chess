@@ -11,4 +11,8 @@ class Board
             @board.push(arry)
         end
     end
+
+    def [](index)
+        return @board[index]
+    end
 end
