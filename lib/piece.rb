@@ -1,9 +1,7 @@
 
 class Piece
     attr_reader :moveset, :limited
-    def initialize(row, column, white)
-        @row = row
-        @column = column
+    def initialize(white)
         @moveset = []
         @moved = false
         @white = white # bool value to flag if the piece is on the white team or the black team
@@ -14,16 +12,14 @@ class Piece
         return moveset
     end
 
-    def move_position(row, column)
+    def move_position
         @moved = true
-        @row = row
-        @column = column
     end
 end
 
 class Knight < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @moveset = [
             [2,1],
             [1,2],
@@ -42,8 +38,8 @@ class Knight < Piece
 end
 
 class King < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @moveset = [
             [1,1],
             [-1,1],
@@ -62,8 +58,8 @@ class King < Piece
 end
 
 class Rook < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @limited = false
         @moveset = [
             [1,0],
@@ -79,8 +75,8 @@ class Rook < Piece
 end
 
 class Bishop < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @limited = false
         @moveset = [
             [1,1],
@@ -96,8 +92,8 @@ class Bishop < Piece
 end
 
 class Queen < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @limited = false
         @moveset = [
             [1,1],
@@ -117,8 +113,8 @@ class Queen < Piece
 end
 
 class Pawn < Piece
-    def initialize(row, column, white)
-        super(row, column, white)
+    def initialize(white)
+        super(white)
         @limited = true
         @moveset_w = [[1,0]]
         @moveset_b = [[-1,0]]
