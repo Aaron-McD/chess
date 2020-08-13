@@ -40,10 +40,11 @@ class Board
                     outst += " | #{item.to_s}"
                 end
             end
+            outst += " | #{y_axis}\n"
             y_axis -= 1
-            outst += " |\n"
             outst +="  ---------------------------------\n"
         end
+        outst += "    a   b   c   d   e   f   g   h \n"
         return outst
     end
 
