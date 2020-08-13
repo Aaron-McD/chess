@@ -34,4 +34,32 @@ describe "Board" do
             expect(board.board.all? { |array| array.all?{ |item| item == nil } } ).to eq(true)
         end
     end
+
+    describe "#add_piece" do
+        it "adds a piece at a give location" do
+            board.add_piece(5, 3, "g")
+            expect(board[5][6]).to eq(5)
+        end
+    end
+
+    describe "#get_piece" do
+        it "returns a piece at a given location" do
+            expect(board.get_piece(3, "g")).to eq(5)
+        end
+    end
+
+    describe "#remove_piece" do
+        it "removes a piece at a given location" do
+            board.remove_piece(3, "g")
+            expect(board.get_piece(3, "g")).to eq(nil)
+        end
+    end
+
+    describe "#move_piece" do
+        it "removes a piece from one location and adds it to the other location" do
+            board.add_piece(5, 3, "g")
+            board.move_piece(3,"g",5,"g")
+            expect(board.get_piece(5, "g")).to eq(5)
+        end
+    end
 end

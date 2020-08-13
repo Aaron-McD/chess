@@ -57,4 +57,22 @@ class Board
             raise "There is already a piece in that spot"
         end
     end
+
+    def get_piece(row, column)
+        column = column.ord - 97 # converting to an array index
+        row = 8 - row
+        return @board[row][column]
+    end
+
+    def remove_piece(row, column)
+        column = column.ord - 97 # converting to an array index
+        row = 8 - row
+        @board[row][column] = nil
+    end
+
+    def move_piece(row_f, column_f, row_t, column_t)
+        piece = get_piece(row_f, column_f)
+        remove_piece(row_f, column_f)
+        add_piece(piece, row_t, column_t)
+    end
 end
