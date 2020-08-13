@@ -37,7 +37,7 @@ class Board
                 if item == nil
                     outst += " |  "
                 else
-                    outst += " |  #{item.to_s}"
+                    outst += " | #{item.to_s}"
                 end
             end
             y_axis -= 1
@@ -45,5 +45,15 @@ class Board
             outst +="  ---------------------------------\n"
         end
         return outst
+    end
+
+    def add_piece(piece, row, column)
+        column = column.ord - 97 # converting to an array index
+        row = 8 - row
+        if @board[row][column] == nil
+            @board[row][column] = piece
+        else
+            raise "There is already a piece in that spot"
+        end
     end
 end

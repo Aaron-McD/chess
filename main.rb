@@ -15,6 +15,9 @@ until game.check_mate
 end
 =end
 
-pawn = Pawn.new(false)
+p1 = Player.new("aaron")
+p2 = Player.new("bob")
 
-p pawn.show_moveset
+game = Chess.new(p1, p2)
+
+puts game.board

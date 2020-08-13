@@ -2,6 +2,7 @@ require_relative "player.rb"
 require_relative "board.rb"
 require_relative "piece.rb"
 class Chess
+    attr_reader :board
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))
             @p1 = player1
@@ -67,6 +68,7 @@ class Chess
                 @board.add_piece(king, 8, "e")
                 @board.add_piece(queen, 8, "d")
             end
+            i += 1
         end
     end
 end
