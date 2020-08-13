@@ -2,17 +2,24 @@ require_relative "player.rb"
 require_relative "board.rb"
 require_relative "piece.rb"
 class Chess
-    attr_reader :board
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))
             @p1 = player1
             @p2 = player2
+            @current_player = @p1
             @board = Board.new
-            @weight = 0
             fill_board
         else
             raise "The players passed to chess object must be a Player object"
         end
+    end
+
+    def show_board
+        puts "#{@p2.name}".center(35)
+        puts "  ---------------------------------\n"
+        puts @board
+        puts "  ---------------------------------\n"
+        puts "#{@p1.name}".center(35)
     end
 
     private

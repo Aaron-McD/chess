@@ -20,4 +20,4 @@ p2 = Player.new("bob")
 
 game = Chess.new(p1, p2)
 
-puts game.board
+game.show_board
