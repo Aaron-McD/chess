@@ -15,6 +15,6 @@ until game.check_mate
 end
 =end
 
-pawn = Pawn.new(8,"a", false)
+pawn = Pawn.new(false)
 
 p pawn.show_moveset
