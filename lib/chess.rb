@@ -22,6 +22,10 @@ class Chess
         puts "#{@p1.name}".center(35)
     end
 
+    def play_round
+        
+    end
+
     private
 
     def fill_board
@@ -77,5 +81,9 @@ class Chess
             end
             i += 1
         end
+    end
+
+    def change_player
+        @current_player = @current_player == @p1 ? @p2 : @p1
     end
 end

@@ -9,7 +9,6 @@ require_relative "lib/chess.rb"
 
 =begin
 until game.check_mate
-    game.change_player
     game.show_board
     game.play_round
 end
