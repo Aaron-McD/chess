@@ -23,7 +23,11 @@ class Chess
     end
 
     def play_round
-        
+        puts "It is #{@current_player.name}'s turn, please type in your move in <location from> - <location to> format."
+        puts "Example (a4 - a5) would be a move for a4 to a5."
+        print "-> "
+        moves = get_move
+        p moves
     end
 
     private
@@ -85,5 +89,34 @@ class Chess
 
     def change_player
         @current_player = @current_player == @p1 ? @p2 : @p1
+    end
+
+    def get_move
+        input = gets.chomp
+        columns = ["a","b","c","d","e","f","g","h"]
+        rows = ["1","2","3","4","5","6","7","8"]
+        correct = false
+        until correct
+            input = input.gsub(" ","").split("-")
+            correct_length = input.length == 2
+            input = input.map { |item| item = item.split("") }
+            bool_arry = []
+            input.each do |arry|
+                bool_arry.push(columns.any? { |char| char == arry[0] })
+                bool_arry.push(rows.any? { |char| char == arry[1] })
+            end
+            correct_orientation = bool_arry.all? { |bool| bool == true }
+            correct = correct_length && correct_orientation
+            unless correct
+                if correct_length
+                    puts "It seems that your values are incorrect or in the wrong orientation, make sure it is <letter><number> and within the bounds of the board."
+                else
+                    puts "Sorry but that isn't correct, make sure you add your '-' character between the locations."
+                end
+                print "Please try again: "
+                input = gets.chomp
+            end
+        end
+        return input
     end
 end

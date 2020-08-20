@@ -20,3 +20,4 @@ p2 = Player.new("bob")
 game = Chess.new(p1, p2)
 
 game.show_board
+game.play_round
