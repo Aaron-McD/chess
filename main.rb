@@ -14,10 +14,12 @@ until game.check_mate
 end
 =end
 
-p1 = Player.new("aaron")
-p2 = Player.new("bob")
+p1 = Player.new("aaron", true)
+p2 = Player.new("bob", false)
 
 game = Chess.new(p1, p2)
 
-game.show_board
-game.play_round
+while true
+    game.show_board
+    game.play_round
+end

@@ -1,6 +1,6 @@
 
 class Piece
-    attr_reader :moveset, :limited
+    attr_reader :moveset, :limited, :white
     def initialize(white)
         @moveset = []
         @moved = false
@@ -8,7 +8,7 @@ class Piece
         @limited = true # limited is the determination if the piece can only move the distance of the moveset or move the moveset any number of times
     end
 
-    def show_moveset
+    def get_moveset
         return moveset
     end
 
@@ -33,7 +33,12 @@ class Knight < Piece
     end
 
     def to_s
-        return "K"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "K#{subscript}".encode('utf-8')
     end
 end
 
@@ -53,7 +58,12 @@ class King < Piece
     end
 
     def to_s
-        return "†"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "†#{subscript}".encode('utf-8')
     end
 end
 
@@ -69,8 +79,14 @@ class Rook < Piece
         ]
     end
 
+    
     def to_s
-        return "R"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "R#{subscript}".encode('utf-8')
     end
 end
 
@@ -86,8 +102,14 @@ class Bishop < Piece
         ]
     end
 
+    
     def to_s
-        return "B"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "B#{subscript}".encode('utf-8')
     end
 end
 
@@ -107,20 +129,29 @@ class Queen < Piece
         ]
     end
 
+    
     def to_s
-        return "Q"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "Q#{subscript}".encode('utf-8')
     end
 end
 
 class Pawn < Piece
+    attr_reader :special_moveset_w, :special_moveset_b
     def initialize(white)
         super(white)
         @limited = true
-        @moveset_w = [[1,0]]
-        @moveset_b = [[-1,0]]
+        @moveset_b = [[1,0]]
+        @moveset_w = [[-1,0]]
+        @special_moveset_b = [[1,1],[1,-1]]
+        @special_moveset_w = [[-1,1],[-1,-1]]
     end
     
-    def show_moveset
+    def get_moveset
         if @moved
             if @white
                 return @moveset_w
@@ -129,14 +160,20 @@ class Pawn < Piece
             end
         else
             if @white
-                return @moveset_w + [[2,0]]
+                return @moveset_w + [[-2,0]]
             else
-                return @moveset_b + [[-2,0]]
+                return @moveset_b + [[2,0]]
             end
         end
     end
 
+    
     def to_s
-        return "P"
+        if white
+            subscript = "\u2081"
+        else
+            subscript = "\u2082"
+        end
+        return "P#{subscript}".encode('utf-8')
     end
 end

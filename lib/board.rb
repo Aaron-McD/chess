@@ -28,23 +28,23 @@ class Board
     end
 
     def to_s
-        outst = "    a   b   c   d   e   f   g   h \n"
-        outst +="  ---------------------------------\n"
+        outst = "    a    b    c    d    e    f    g    h \n"
+        outst +="  ----------------------------------------\n"
         y_axis = 8
         @board.each do |array|
             outst += y_axis.to_s
             array.each do |item|
                 if item == nil
-                    outst += " |  "
+                    outst += " |   "
                 else
                     outst += " | #{item.to_s}"
                 end
             end
             outst += " | #{y_axis}\n"
             y_axis -= 1
-            outst +="  ---------------------------------\n"
+            outst +="  ----------------------------------------\n"
         end
-        outst += "    a   b   c   d   e   f   g   h \n"
+        outst += "    a    b    c    d    e    f    g    h \n"
         return outst
     end
 
