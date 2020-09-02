@@ -75,4 +75,23 @@ class Board
         remove_piece(row_f, column_f)
         add_piece(piece, row_t, column_t)
     end
+
+    def find_piece(piece)
+        i = 0
+        while i < @board.length
+            column = @board[i].index(piece)
+            if column == nil
+                i += 1
+            else
+                break
+            end
+        end
+        if column == nil
+            return nil
+        else
+            column = (column + 97).chr
+            row = (i - 8) * -1
+            return [row, column]
+        end
+    end
 end
