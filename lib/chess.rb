@@ -20,6 +20,8 @@ class Chess
             @board = Board.new
             @previous_move = []
             @last_removed_piece = nil
+            @COLUMNS = ["a","b","c","d","e","f","g","h"]
+            @ROWS = ["1","2","3","4","5","6","7","8"]
             fill_board
         else
             raise "The players passed to chess object must be a Player object"
@@ -230,8 +232,6 @@ class Chess
 
     def get_move
         input = gets.chomp
-        columns = ["a","b","c","d","e","f","g","h"]
-        rows = ["1","2","3","4","5","6","7","8"]
         correct = false
         until correct
             input = input.gsub(" ","").split("-")
@@ -239,8 +239,8 @@ class Chess
             input = input.map { |item| item = item.split("") }
             bool_arry = []
             input.each do |arry|
-                bool_arry.push(columns.any? { |char| char == arry[0] })
-                bool_arry.push(rows.any? { |char| char == arry[1] })
+                bool_arry.push(@COLUMNS.any? { |char| char == arry[0] })
+                bool_arry.push(@ROWS.any? { |char| char == arry[1] })
             end
             correct_orientation = bool_arry.all? { |bool| bool == true }
             correct = correct_length && correct_orientation
@@ -292,30 +292,22 @@ class Chess
         return true
     end
 
-    def valid_move?(move, player_matters = true, silence = false)
-        columns = ["a","b","c","d","e","f","g","h"]
-        rows = ["1","2","3","4","5","6","7","8"]
+    def within_bounds?(move)    
         starting_pos = move[0]
         end_pos = move[1]
-        unless (columns.include?(starting_pos[0]) && columns.include?(end_pos[0])) && (rows.include?(starting_pos[1]) && rows.include?(end_pos[1]))
+        unless (@COLUMNS.include?(starting_pos[0]) && @COLUMNS.include?(end_pos[0])) && (@ROWS.include?(starting_pos[1]) && @ROWS.include?(end_pos[1]))
             return false
         end
-        piece = @board.get_piece(starting_pos[1].to_i, starting_pos[0])
-        if piece == nil
-            puts "There is no piece at that starting location." unless silence
-            return false 
-        end
-        if @current_player.white != piece.white && player_matters
-            puts "That isn't your piece"
-            return false
-        end
+        return true
+    end
+
+    def within_moveset?(piece, move)
         moveset = piece.get_moveset
-        starting_pos_index = convert_location_to_index(starting_pos[1].to_i, starting_pos[0])
-        end_pos_index = convert_location_to_index(end_pos[1].to_i, end_pos[0])
+        starting_pos_index = convert_location_to_index(move[0][1].to_i, move[0][0])
+        end_pos_index = convert_location_to_index(move[1][1].to_i, move[1][0])
         movement = [end_pos_index[0] - starting_pos_index[0], end_pos_index[1] - starting_pos_index[1]]
         if piece.limited
             unless moveset.include?(movement)
-                puts "That isn't a valid move for that piece." unless silence
                 return false
             end
         else
@@ -329,12 +321,10 @@ class Chess
                 end
                 base_move[zero_value] = 0
                 unless moveset.include?(base_move)
-                    puts "That isn't a valid move for that piece." unless silence
                     return false
                 end
             else
                 if movement[0] % movement[1] != 0
-                    puts "That isn't a valid move for that piece." unless silence
                     return false
                 else
                     base_value = movement[0] > 0 ? movement[0] : movement[0] * -1
@@ -342,25 +332,59 @@ class Chess
                     base_move[0] = movement[0].to_f / base_value.to_f
                     base_move[1] = movement[1].to_f / base_value.to_f
                     unless moveset.include?(base_move)
-                        puts "That isn't a valid move for that piece." unless silence
                         return false
                     end
                 end
             end
         end
+        return true
+    end
+
+    def valid_path_for_piece?(piece, move)
         unless piece.is_a?(Knight)
-            unless valid_path?(starting_pos, end_pos)
-                puts "There is a piece in the way." unless silence
+            unless valid_path?(move[0], move[1])
                 return false
             end
         else
-            final_piece = @board.get_piece(end_pos[1].to_i, end_pos[0])
+            final_piece = @board.get_piece(move[1][1].to_i, move[1][0])
             if final_piece != nil
                 if final_piece.white == piece.white
                     return false
                 end
             end
         end
+        return true
+    end
+
+    def valid_move?(move, player_matters = true, silence = false)
+        # valid_move? is a checklist for certain criteria to declare a move as valid
+        piece = @board.get_piece(move[0][1].to_i, move[0][0])
+        # check that the move is within the givin rows and columns available
+        unless within_bounds?(move)
+            puts "That move is out of bounds." unless silence
+            return false 
+        end
+        # check that there is a piece at the starting location
+        if piece == nil
+            puts "There is no piece at that starting location." unless silence
+            return false 
+        end
+        # check that the piece is accessible to the player trying to use it
+        if @current_player.white != piece.white && player_matters
+            puts "That isn't your piece." unless silence
+            return false
+        end
+        # check that the piece is trying to be moved within its moveset
+        unless within_moveset?(piece, move)
+            puts "That isn't a valid move for that piece." unless silence
+            return false
+        end
+        # check that it has a valid path
+        unless valid_path_for_piece?(piece, move)
+            puts "There is a piece in the way." unless silence
+            return false
+        end
+        # check that the movement won't put the player in check
         if player_matters
             unless move_without_check?(move)
                 puts "That move would put you in check" unless silence

@@ -138,7 +138,6 @@ class Queen < Piece
 end
 
 class Pawn < Piece
-    attr_reader :special_moveset_w, :special_moveset_b
     def initialize(white)
         super(white)
         @limited = true
@@ -146,6 +145,14 @@ class Pawn < Piece
         @moveset_w = [[-1,0]]
         @special_moveset_b = [[1,1],[1,-1]]
         @special_moveset_w = [[-1,1],[-1,-1]]
+    end
+
+    def get_special_moves
+        if @white
+            return @special_moveset_w
+        else
+            return @special_moveset_b
+        end
     end
     
     def get_moveset
