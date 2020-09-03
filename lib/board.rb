@@ -29,7 +29,7 @@ class Board
 
     def to_s
         outst = "    a    b    c    d    e    f    g    h \n"
-        outst +="  ----------------------------------------\n"
+        outst +="  -----------------------------------------\n"
         y_axis = 8
         @board.each do |array|
             outst += y_axis.to_s
@@ -42,7 +42,7 @@ class Board
             end
             outst += " | #{y_axis}\n"
             y_axis -= 1
-            outst +="  ----------------------------------------\n"
+            outst +="  -----------------------------------------\n"
         end
         outst += "    a    b    c    d    e    f    g    h \n"
         return outst

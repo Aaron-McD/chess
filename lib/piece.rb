@@ -1,19 +1,16 @@
 
 class Piece
     attr_reader :moveset, :limited, :white
+    attr_accessor :moves
     def initialize(white)
         @moveset = []
-        @moved = false
+        @moves = 0
         @white = white # bool value to flag if the piece is on the white team or the black team
         @limited = true # limited is the determination if the piece can only move the distance of the moveset or move the moveset any number of times
     end
 
     def get_moveset
         return moveset
-    end
-
-    def move_position
-        @moved = true
     end
 end
 
@@ -152,7 +149,7 @@ class Pawn < Piece
     end
     
     def get_moveset
-        if @moved
+        if @moves > 0
             if @white
                 return @moveset_w
             else

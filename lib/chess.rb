@@ -18,6 +18,8 @@ class Chess
             @current_player = @p1
             @current_player_pieces = @p1_pieces
             @board = Board.new
+            @previous_move = []
+            @last_removed_piece = nil
             fill_board
         else
             raise "The players passed to chess object must be a Player object"
@@ -26,11 +28,11 @@ class Chess
 
     def show_board
         puts ""
-        puts "#{@p2.name}".center(42)
-        puts "  ----------------------------------------\n"
+        puts "#{@p2.name}".center(44)
+        puts "  -----------------------------------------\n"
         puts @board
-        puts "  ----------------------------------------\n"
-        puts "#{@p1.name}".center(42)
+        puts "  -----------------------------------------\n"
+        puts "#{@p1.name}".center(44)
         puts ""
     end
 
@@ -103,10 +105,12 @@ class Chess
     def execute_move(move)
         start = move[0]
         finish = move[1]
+        @previous_move = move
         piece = @board.get_piece(start[1].to_i, start[0])
-        piece.move_position
+        piece.moves += 1
         opposing_piece = @board.get_piece(finish[1].to_i, finish[0])
         @board.remove_piece(start[1].to_i, start[0])
+        @last_removed_piece = opposing_piece
         if opposing_piece != nil
             @board.remove_piece(finish[1].to_i, finish[0])
             if @current_player == @p1
@@ -116,6 +120,34 @@ class Chess
             end
         end
         @board.add_piece(piece, finish[1].to_i, finish[0])
+    end
+
+    def undo_last_move
+        start = @previous_move[0]
+        finish = @previous_move[1]
+        piece = @board.get_piece(finish[1].to_i, finish[0])
+        piece.moves -= 1
+        @board.remove_piece(finish[1].to_i, finish[0])
+        if @last_removed_piece != nil
+            @board.add_piece(@last_removed_piece, finish[1].to_i, finish[0])
+            if @current_player == @p1
+                @p2_pieces.push(@last_removed_piece)
+            else
+                @p1_pieces.push(@last_removed_piece)
+            end
+        end
+        @board.add_piece(piece, start[1].to_i, start[0])
+    end
+
+    def move_without_check?(move)
+        execute_move(move)
+        if check?
+            undo_last_move
+            return false
+        else
+            undo_last_move
+            return true
+        end
     end
 
     def fill_board
@@ -327,6 +359,12 @@ class Chess
                 if final_piece.white == piece.white
                     return false
                 end
+            end
+        end
+        if player_matters
+            unless move_without_check?(move)
+                puts "That move would put you in check" unless silence
+                return false
             end
         end
         return true
