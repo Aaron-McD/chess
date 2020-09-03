@@ -77,7 +77,9 @@ class Chess
         location = @board.find_piece(piece)
         location_index = convert_location_to_index(location[0], location[1])
         valid_moves = []
-        piece.get_moveset.each do |move|
+        moveset = piece.get_moveset
+        moveset += piece.get_special_moves if piece.is_a?(Pawn)
+        moveset.each do |move|
             if piece.limited
                 finish_index = [location_index[0] + move[0], location_index[1] + move[1]]
                 final_pos = convert_index_to_location(finish_index[0], finish_index[1])
@@ -303,9 +305,18 @@ class Chess
 
     def within_moveset?(piece, move)
         moveset = piece.get_moveset
-        starting_pos_index = convert_location_to_index(move[0][1].to_i, move[0][0])
-        end_pos_index = convert_location_to_index(move[1][1].to_i, move[1][0])
-        movement = [end_pos_index[0] - starting_pos_index[0], end_pos_index[1] - starting_pos_index[1]]
+        movement = get_movement(move)
+        if piece.is_a?(Pawn)
+            special_move = piece.get_special_moves
+            if special_move.include?(movement)
+                opposing_piece = @board.get_piece(move[1][1].to_i, move[1][0])
+                if opposing_piece == nil
+                    return false
+                else
+                    return opposing_piece.white != piece.white
+                end
+            end
+        end
         if piece.limited
             unless moveset.include?(movement)
                 return false
@@ -339,9 +350,28 @@ class Chess
         end
         return true
     end
+    
+    def get_movement(move)
+        starting_pos_index = convert_location_to_index(move[0][1].to_i, move[0][0])
+        end_pos_index = convert_location_to_index(move[1][1].to_i, move[1][0])
+        movement = [end_pos_index[0] - starting_pos_index[0], end_pos_index[1] - starting_pos_index[1]]
+        return movement
+    end
 
     def valid_path_for_piece?(piece, move)
-        unless piece.is_a?(Knight)
+        if piece.is_a?(Pawn)
+            opposing_piece = @board.get_piece(move[1][1].to_i, move[1][0])
+            movement = get_movement(move)
+            if piece.get_special_moves.include?(movement)
+                if opposing_piece == nil
+                    return false
+                else
+                    return opposing_piece.white != piece.white
+                end
+            else
+                return opposing_piece == nil
+            end
+        elsif !(piece.is_a?(Knight))
             unless valid_path?(move[0], move[1])
                 return false
             end
