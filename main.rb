@@ -1,25 +1,14 @@
 require_relative "lib/chess.rb"
-# example API usage
-# puts "Welcome to chess in the console! We will start by getting the name of player 1: "
-# player1 = get_player
-# puts "Alright now we will get the name of player 2:"
-# player2 = get_player
 
-# game = Chess.new("player1", "player2")
-
-=begin
-until game.check_mate
-    game.show_board
-    game.play_round
-end
-=end
 
 p1 = Player.new("aaron", true)
 p2 = Player.new("bob", false)
 
 game = Chess.new(p1, p2)
 
-while true
+until game.check_mate?
     game.show_board
     game.play_round
 end
+winning_player = game.current_player == p1 ? p2 : p1
+puts "#{game.current_player.name} has been checkmated! #{winning_player.name} wins!"
