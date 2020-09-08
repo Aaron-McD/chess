@@ -41,22 +41,6 @@ class Chess
         puts ""
     end
 
-    def play_round
-        if check?
-            puts "#{@current_player.name} is in check!"
-        end
-        puts "It is #{@current_player.name}'s turn, please type in your move in '<location from> - <location to>' format."
-        puts "Example a4 - a5 would be a move for a4 to a5."
-        print "-> "
-        move = get_move
-        until valid_move?(move)
-            print "Sorry that isn't a valid move, please try again: "
-            move = get_move
-        end
-        execute_move(move, true)
-        change_player
-    end
-
     def check_mate?
         # check_mate is when your king is currently in check and all possible moves you could make would leave you in check
         # to know if we are check mate we must first determine if we are in check
@@ -85,7 +69,32 @@ class Chess
         end
     end
 
-    private
+    def get_move
+        input = gets.chomp
+        correct = false
+        until correct
+            input = input.gsub(" ","").split("-")
+            correct_length = input.length == 2
+            input = input.map { |item| item = item.split("") }
+            bool_arry = []
+            input.each do |arry|
+                bool_arry.push(@COLUMNS.any? { |char| char == arry[0] })
+                bool_arry.push(@ROWS.any? { |char| char == arry[1] })
+            end
+            correct_orientation = bool_arry.all? { |bool| bool == true }
+            correct = correct_length && correct_orientation
+            unless correct
+                if correct_length
+                    puts "It seems that your values are incorrect or in the wrong orientation, make sure it is <letter><number> and within the bounds of the board."
+                else
+                    puts "Sorry but that isn't correct, make sure you add your '-' character between the locations."
+                end
+                print "Please try again: "
+                input = gets.chomp
+            end
+        end
+        return input
+    end
 
     def check?
         opposing_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
@@ -103,6 +112,84 @@ class Chess
         end
         return false
     end
+
+    def change_player
+        @current_player_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
+        @current_player = @current_player == @p1 ? @p2 : @p1
+    end
+
+    def valid_move?(move, player_matters = true, silence = false)
+        # valid_move? is a checklist for certain criteria to declare a move as valid
+        piece = @board.get_piece(move[0][1].to_i, move[0][0])
+        # check that the move is within the givin rows and columns available
+        unless within_bounds?(move)
+            puts "That move is out of bounds." unless silence
+            return false 
+        end
+        # check that there is a piece at the starting location
+        if piece == nil
+            puts "There is no piece at that starting location." unless silence
+            return false 
+        end
+        # check that the piece is accessible to the player trying to use it
+        if @current_player.white != piece.white && player_matters
+            puts "That isn't your piece." unless silence
+            return false
+        end
+        # check that the piece is trying to be moved within its moveset
+        unless within_moveset?(piece, move)
+            puts "That isn't a valid move for that piece." unless silence
+            return false
+        end
+        # check that it has a valid path
+        unless valid_path_for_piece?(piece, move)
+            puts "There is a piece in the way." unless silence
+            return false
+        end
+        # check that the movement won't put the player in check
+        if player_matters
+            unless move_without_check?(move)
+                puts "That move would put you in check" unless silence
+                return false
+            end
+        end
+        return true
+    end
+
+    def execute_move(move, official)
+        start = move[0]
+        finish = move[1]
+        if official
+            @previous_official_move = move
+        else
+            @previous_temp_move = move
+        end
+        if castle?(move)
+            execute_castle(move)
+        else
+            if en_passant?(move)
+                opposing_piece = @board.get_piece(@previous_official_move[1][1].to_i, @previous_official_move[1][0])
+            else
+                opposing_piece = @board.get_piece(finish[1].to_i, finish[0])
+            end
+            piece = @board.get_piece(start[1].to_i, start[0])
+            piece.moves += 1
+            @board.remove_piece(start[1].to_i, start[0])
+            @last_removed_piece = opposing_piece
+            if opposing_piece != nil
+                location = @board.find_piece(opposing_piece)
+                @board.remove_piece(location[0], location[1])
+                if @current_player == @p1
+                    @p2_pieces.delete(opposing_piece)
+                else
+                    @p1_pieces.delete(opposing_piece)
+                end
+            end
+            @board.add_piece(piece, finish[1].to_i, finish[0])
+        end
+    end
+
+    private
 
     def castle?(move)
         # castling is when the move is for the king to move 2 space left or right while that rook and the king have yet to move
@@ -204,39 +291,6 @@ class Chess
         @board.add_piece(rook, rook_finish[1], rook_finish[0])
         king.moves += 1
         rook.moves += 1
-    end
-
-    def execute_move(move, official)
-        start = move[0]
-        finish = move[1]
-        if official
-            @previous_official_move = move
-        else
-            @previous_temp_move = move
-        end
-        if castle?(move)
-            execute_castle(move)
-        else
-            if en_passant?(move)
-                opposing_piece = @board.get_piece(@previous_official_move[1][1].to_i, @previous_official_move[1][0])
-            else
-                opposing_piece = @board.get_piece(finish[1].to_i, finish[0])
-            end
-            piece = @board.get_piece(start[1].to_i, start[0])
-            piece.moves += 1
-            @board.remove_piece(start[1].to_i, start[0])
-            @last_removed_piece = opposing_piece
-            if opposing_piece != nil
-                location = @board.find_piece(opposing_piece)
-                @board.remove_piece(location[0], location[1])
-                if @current_player == @p1
-                    @p2_pieces.delete(opposing_piece)
-                else
-                    @p1_pieces.delete(opposing_piece)
-                end
-            end
-            @board.add_piece(piece, finish[1].to_i, finish[0])
-        end
     end
 
     def undo_last_move(official)
@@ -343,38 +397,6 @@ class Chess
             end
             i += 1
         end
-    end
-
-    def change_player
-        @current_player_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
-        @current_player = @current_player == @p1 ? @p2 : @p1
-    end
-
-    def get_move
-        input = gets.chomp
-        correct = false
-        until correct
-            input = input.gsub(" ","").split("-")
-            correct_length = input.length == 2
-            input = input.map { |item| item = item.split("") }
-            bool_arry = []
-            input.each do |arry|
-                bool_arry.push(@COLUMNS.any? { |char| char == arry[0] })
-                bool_arry.push(@ROWS.any? { |char| char == arry[1] })
-            end
-            correct_orientation = bool_arry.all? { |bool| bool == true }
-            correct = correct_length && correct_orientation
-            unless correct
-                if correct_length
-                    puts "It seems that your values are incorrect or in the wrong orientation, make sure it is <letter><number> and within the bounds of the board."
-                else
-                    puts "Sorry but that isn't correct, make sure you add your '-' character between the locations."
-                end
-                print "Please try again: "
-                input = gets.chomp
-            end
-        end
-        return input
     end
 
     def get_path(start, finish)
@@ -506,44 +528,6 @@ class Chess
                 if final_piece.white == piece.white
                     return false
                 end
-            end
-        end
-        return true
-    end
-
-    def valid_move?(move, player_matters = true, silence = false)
-        # valid_move? is a checklist for certain criteria to declare a move as valid
-        piece = @board.get_piece(move[0][1].to_i, move[0][0])
-        # check that the move is within the givin rows and columns available
-        unless within_bounds?(move)
-            puts "That move is out of bounds." unless silence
-            return false 
-        end
-        # check that there is a piece at the starting location
-        if piece == nil
-            puts "There is no piece at that starting location." unless silence
-            return false 
-        end
-        # check that the piece is accessible to the player trying to use it
-        if @current_player.white != piece.white && player_matters
-            puts "That isn't your piece." unless silence
-            return false
-        end
-        # check that the piece is trying to be moved within its moveset
-        unless within_moveset?(piece, move)
-            puts "That isn't a valid move for that piece." unless silence
-            return false
-        end
-        # check that it has a valid path
-        unless valid_path_for_piece?(piece, move)
-            puts "There is a piece in the way." unless silence
-            return false
-        end
-        # check that the movement won't put the player in check
-        if player_matters
-            unless move_without_check?(move)
-                puts "That move would put you in check" unless silence
-                return false
             end
         end
         return true
