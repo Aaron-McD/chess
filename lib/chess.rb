@@ -3,7 +3,7 @@ require_relative "board.rb"
 require_relative "piece.rb"
 
 class Chess
-    attr_reader :current_player
+    attr_reader :current_player, :other_player
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))
             if player1.white == true
@@ -19,6 +19,7 @@ class Chess
             @p2_pieces = []
             @current_player = @p1
             @current_player_pieces = @p1_pieces
+            @other_player = @p2
             @board = Board.new
             @previous_official_move = []
             @previous_temp_move = []
@@ -70,8 +71,9 @@ class Chess
     end
 
     def get_move
-        input = gets.chomp
+        input = gets.chomp.downcase
         correct = false
+        return input if input == "save"
         until correct
             input = input.gsub(" ","").split("-")
             correct_length = input.length == 2
@@ -116,6 +118,7 @@ class Chess
     def change_player
         @current_player_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
         @current_player = @current_player == @p1 ? @p2 : @p1
+        @other_player = @other_player == @p1 ? @p2 : @p1
     end
 
     def valid_move?(move, player_matters = true, silence = false)
@@ -210,8 +213,6 @@ class Chess
             finish = ['d', row.to_s]
         end
         return false if rook == nil || rook.moves != 0
-        p start
-        p finish
         return valid_path?(start, finish)
     end
 
