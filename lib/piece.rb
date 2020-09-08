@@ -1,5 +1,7 @@
+require_relative "Serializable.rb"
 
 class Piece
+    include Serializable
     attr_reader :moveset, :limited, :white
     attr_accessor :moves
     def initialize(white)
@@ -138,6 +140,7 @@ class Queen < Piece
 end
 
 class Pawn < Piece
+    attr_reader :moveset_b, :moveset_w, :special_moveset_b, :special_moveset_w
     def initialize(white)
         super(white)
         @limited = true

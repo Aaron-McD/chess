@@ -1,8 +1,10 @@
 require_relative "player.rb"
 require_relative "board.rb"
 require_relative "piece.rb"
+require_relative "Serializable.rb"
 
 class Chess
+    include Serializable
     attr_reader :current_player, :other_player
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))
@@ -15,18 +17,18 @@ class Chess
             elsif player1.white == player2.white
                 raise "players must be of different colors"
             end
-            @p1_pieces = []
-            @p2_pieces = []
+            @board = Board.new
+            fill_board
+            @p1_pieces = get_pieces(true)
+            @p2_pieces = get_pieces(false)
             @current_player = @p1
             @current_player_pieces = @p1_pieces
             @other_player = @p2
-            @board = Board.new
             @previous_official_move = []
             @previous_temp_move = []
             @last_removed_piece = nil
             @COLUMNS = ["a","b","c","d","e","f","g","h"]
             @ROWS = ["1","2","3","4","5","6","7","8"]
-            fill_board
         else
             raise "The players passed to chess object must be a Player object"
         end
@@ -75,6 +77,7 @@ class Chess
         correct = false
         return input if input == "save"
         until correct
+            return input if input == "save"
             input = input.gsub(" ","").split("-")
             correct_length = input.length == 2
             input = input.map { |item| item = item.split("") }
@@ -192,7 +195,39 @@ class Chess
         end
     end
 
+    def save_state(filename)
+        Dir.mkdir "saves" unless Dir.exist? "saves"
+        serial_string = self.serialize
+        save = File.new("saves/#{filename}", "w")
+        save.puts serial_string
+        save.close
+    end
+
+    def load_state(filename)
+        load_contents = File.read "saves/#{filename}"
+        File.delete("saves/#{filename}")
+        self.unserialize(load_contents)
+        @p1_pieces = get_pieces(true)
+        @p2_pieces = get_pieces(false)
+        @current_player = @p1.name == @current_player.name ? @p1 : @p2
+        @other_player = @p1.name == @other_player.name ? @p1 : @p2
+        @current_player_pieces = @current_player == @p1 ? @p1_pieces : @p2_pieces
+        return self
+    end
+
     private
+
+    def get_pieces(white)
+        pieces = []
+        @board.board.each do |array|
+            array.each do |item|
+                if item.is_a?(Piece) && item.white == white
+                    pieces.push(item)
+                end
+            end
+        end
+        return pieces
+    end
 
     def castle?(move)
         # castling is when the move is for the king to move 2 space left or right while that rook and the king have yet to move
@@ -333,10 +368,8 @@ class Chess
         8.times do
             piece = Pawn.new(true)
             @board.add_piece(piece, 2, column_index[i])
-            @p1_pieces.push(piece)
             piece = Pawn.new(false)
             @board.add_piece(piece, 7, column_index[i])
-            @p2_pieces.push(piece)
             i += 1
         end
         i = 1
@@ -350,32 +383,20 @@ class Chess
                     @board.add_piece(rook, 1, "a")
                     @board.add_piece(knight, 1, "b")
                     @board.add_piece(bishop, 1, "c")
-                    @p1_pieces.push(rook)
-                    @p1_pieces.push(knight)
-                    @p1_pieces.push(bishop)
                 else
                     @board.add_piece(rook, 8, "a")
                     @board.add_piece(knight, 8, "b")
                     @board.add_piece(bishop, 8, "c")
-                    @p2_pieces.push(rook)
-                    @p2_pieces.push(knight)
-                    @p2_pieces.push(bishop)
                 end
             else
                 if(white)
                     @board.add_piece(rook, 1, "h")
                     @board.add_piece(knight, 1, "g")
                     @board.add_piece(bishop, 1, "f")
-                    @p1_pieces.push(rook)
-                    @p1_pieces.push(knight)
-                    @p1_pieces.push(bishop)
                 else
                     @board.add_piece(rook, 8, "h")
                     @board.add_piece(knight, 8, "g")
                     @board.add_piece(bishop, 8, "f")
-                    @p2_pieces.push(rook)
-                    @p2_pieces.push(knight)
-                    @p2_pieces.push(bishop)
                 end
             end
             i += 1
@@ -388,13 +409,9 @@ class Chess
             if white
                 @board.add_piece(king, 1, "e")
                 @board.add_piece(queen, 1, "d")
-                @p1_pieces.push(king)
-                @p1_pieces.push(queen)
             else
                 @board.add_piece(king, 8, "e")
                 @board.add_piece(queen, 8, "d")
-                @p2_pieces.push(king)
-                @p2_pieces.push(queen)
             end
             i += 1
         end

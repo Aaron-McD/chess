@@ -1,5 +1,7 @@
+require_relative "Serializable.rb"
 
 class Board
+    include Serializable
     attr_reader :board
     def initialize 
         @board = []
