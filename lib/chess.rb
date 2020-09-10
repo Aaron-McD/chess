@@ -71,10 +71,9 @@ class Chess
         end
     end
 
-    def get_move
+    def get_move # Done
         input = gets.chomp.downcase
         correct = false
-        return input if input == "save"
         until correct
             return input if input == "save"
             input = input.gsub(" ","").split("-")
@@ -94,7 +93,7 @@ class Chess
                     puts "Sorry but that isn't correct, make sure you add your '-' character between the locations."
                 end
                 print "Please try again: "
-                input = gets.chomp
+                input = gets.chomp.downcase
             end
         end
         return input
