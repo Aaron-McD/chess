@@ -17,6 +17,8 @@ class Chess
             elsif player1.white == player2.white
                 raise "players must be of different colors"
             end
+            @COLUMNS = ["a","b","c","d","e","f","g","h"]
+            @ROWS = ["1","2","3","4","5","6","7","8"]
             @board = Board.new
             fill_board
             @p1_pieces = get_pieces(true)
@@ -27,14 +29,12 @@ class Chess
             @previous_official_move = []
             @previous_temp_move = []
             @last_removed_piece = nil
-            @COLUMNS = ["a","b","c","d","e","f","g","h"]
-            @ROWS = ["1","2","3","4","5","6","7","8"]
         else
             raise "The players passed to chess object must be a Player object"
         end
     end
 
-    def show_board # Done
+    def show_board
         puts ""
         puts "#{@p2.name}".center(44)
         puts "  -----------------------------------------\n"
@@ -44,7 +44,7 @@ class Chess
         puts ""
     end
 
-    def check_mate? # Done
+    def check_mate?
         # check_mate is when your king is currently in check and all possible moves you could make would leave you in check
         # to know if we are check mate we must first determine if we are in check
         if check?
@@ -71,7 +71,7 @@ class Chess
         end
     end
 
-    def get_move # Done
+    def get_move
         input = gets.chomp.downcase
         correct = false
         until correct
@@ -102,7 +102,6 @@ class Chess
     def check?
         opposing_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
         valid_movesets = []
-        valid_ranges = []
         opposing_pieces.each do |piece|
             valid_movesets.push(generate_valid_moveset(piece))
         end
@@ -361,13 +360,12 @@ class Chess
     end
 
     def fill_board
-        column_index = ["a","b","c","d","e","f","g","h"]
         i = 0
         8.times do
             piece = Pawn.new(true)
-            @board.add_piece(piece, 2, column_index[i])
+            @board.add_piece(piece, 2, @COLUMNS[i])
             piece = Pawn.new(false)
-            @board.add_piece(piece, 7, column_index[i])
+            @board.add_piece(piece, 7, @COLUMNS[i])
             i += 1
         end
         i = 1
@@ -453,10 +451,7 @@ class Chess
     def within_bounds?(move)    
         starting_pos = move[0]
         end_pos = move[1]
-        unless (@COLUMNS.include?(starting_pos[0]) && @COLUMNS.include?(end_pos[0])) && (@ROWS.include?(starting_pos[1]) && @ROWS.include?(end_pos[1]))
-            return false
-        end
-        return true
+        return (@COLUMNS.include?(starting_pos[0]) && @COLUMNS.include?(end_pos[0])) && (@ROWS.include?(starting_pos[1]) && @ROWS.include?(end_pos[1]))
     end
 
     def within_moveset?(piece, move)
