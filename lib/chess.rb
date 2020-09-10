@@ -18,7 +18,7 @@ class Chess
                 raise "players must be of different colors"
             end
             @COLUMNS = ["a","b","c","d","e","f","g","h"]
-            @ROWS = ["1","2","3","4","5","6","7","8"]
+            @ROWS = [1, 2, 3, 4, 5, 6, 7, 8]
             @board = Board.new
             fill_board
             @p1_pieces = get_pieces(true)
@@ -53,14 +53,11 @@ class Chess
             valid_moves = {}
             @current_player_pieces.each do |piece|
                 location = @board.find_piece(piece)
-                location[0] = location[0].to_s
                 valid_moves[location] = generate_valid_moveset(piece)
             end
             valid_moves.each_key do |start|
-                start_move = [start[1], start[0]]
                 valid_moves[start].each do |finish|
-                    finish_move = [finish[1], finish[0].to_s]
-                    if valid_move?([start_move, finish_move], true, true)
+                    if valid_move?([start, finish], true, true)
                         return false
                     end
                 end
@@ -72,6 +69,8 @@ class Chess
     end
 
     def get_move
+        # when a move is recieved it should be converted to a format that the board can easily use. Ex: [1, 'h']
+        # or in other words [row.to_i, column] format and this should remain consistant through the program
         input = gets.chomp.downcase
         correct = false
         until correct
@@ -82,7 +81,7 @@ class Chess
             bool_arry = []
             input.each do |arry|
                 bool_arry.push(@COLUMNS.any? { |char| char == arry[0] })
-                bool_arry.push(@ROWS.any? { |char| char == arry[1] })
+                bool_arry.push(@ROWS.any? { |char| char.to_s == arry[1] })
             end
             correct_orientation = bool_arry.all? { |bool| bool == true }
             correct = correct_length && correct_orientation
@@ -96,7 +95,9 @@ class Chess
                 input = gets.chomp.downcase
             end
         end
-        return input
+        move_start = [input[0][1].to_i, input[0][0]]
+        move_end = [input[1][1].to_i, input[1][0]]
+        return [move_start, move_end]
     end
 
     def check?
@@ -123,7 +124,7 @@ class Chess
 
     def valid_move?(move, player_matters = true, silence = false)
         # valid_move? is a checklist for certain criteria to declare a move as valid
-        piece = @board.get_piece(move[0][1].to_i, move[0][0])
+        piece = @board.get_piece(move[0][0], move[0][1])
         # check that the move is within the givin rows and columns available
         unless within_bounds?(move)
             puts "That move is out of bounds." unless silence
@@ -171,13 +172,13 @@ class Chess
             execute_castle(move)
         else
             if en_passant?(move)
-                opposing_piece = @board.get_piece(@previous_official_move[1][1].to_i, @previous_official_move[1][0])
+                opposing_piece = @board.get_piece(@previous_official_move[1][0], @previous_official_move[1][1])
             else
-                opposing_piece = @board.get_piece(finish[1].to_i, finish[0])
+                opposing_piece = @board.get_piece(finish[0], finish[1])
             end
-            piece = @board.get_piece(start[1].to_i, start[0])
+            piece = @board.get_piece(start[0], start[1])
             piece.moves += 1
-            @board.remove_piece(start[1].to_i, start[0])
+            @board.remove_piece(start[0], start[1])
             @last_removed_piece = opposing_piece
             if opposing_piece != nil
                 location = @board.find_piece(opposing_piece)
@@ -188,7 +189,7 @@ class Chess
                     @p1_pieces.delete(opposing_piece)
                 end
             end
-            @board.add_piece(piece, finish[1].to_i, finish[0])
+            @board.add_piece(piece, finish[0], finish[1])
         end
     end
 
@@ -231,18 +232,18 @@ class Chess
         # the path must also be clear to make this move
         movement = get_movement(move)
         return false if movement[0] > 0 || (movement[1] != 2 && movement[1] != -2)
-        col = move[0][0]
-        row = move[0][1].to_i
+        col = move[0][1]
+        row = move[0][0]
         king = @board.get_piece(row, col)
         return false if king.moves != 0
         if movement[1] > 0
             rook = @board.get_piece(row, 'h')
-            start = ['h', row.to_s]
-            finish = ['f', row.to_s]
+            start = [row, 'h']
+            finish = [row, 'f']
         else
             rook = @board.get_piece(row, 'a')
-            start = ['a', row.to_s]
-            finish = ['d', row.to_s]
+            start = [row, 'a']
+            finish = [row, 'd']
         end
         return false if rook == nil || rook.moves != 0
         return valid_path?(start, finish)
@@ -250,16 +251,16 @@ class Chess
 
     def en_passant?(move)
         return false if @previous_official_move == []
-        final_col = move[1][0]
-        final_row = move[1][1].to_i
+        final_col = move[1][1]
+        final_row = move[1][0]
         final_piece = @board.get_piece(final_row, final_col)
         return false if final_piece != nil
-        prev_final_col = @previous_official_move[1][0]
-        prev_final_row = @previous_official_move[1][1].to_i
+        prev_final_col = @previous_official_move[1][1]
+        prev_final_row = @previous_official_move[1][0]
         prev_piece = @board.get_piece(prev_final_row, prev_final_col)
         return false unless prev_piece.is_a?(Pawn)
-        prev_start_col = @previous_official_move[0][0]
-        prev_start_row = @previous_official_move[0][1].to_i
+        prev_start_col = @previous_official_move[0][1]
+        prev_start_row = @previous_official_move[0][0]
         return false unless (prev_start_col == prev_final_col && prev_final_col == final_col)
         if final_row > prev_final_row
             return final_row < prev_start_row
@@ -280,8 +281,8 @@ class Chess
             if piece.limited
                 finish_index = [location_index[0] + move[0], location_index[1] + move[1]]
                 final_pos = convert_index_to_location(finish_index[0], finish_index[1])
-                finish = [final_pos[1], final_pos[0].to_s]
-                start = [location[1], location[0].to_s]
+                finish = [final_pos[0], final_pos[1]]
+                start = [location[0], location[1]]
                 valid_moves.push(final_pos) if valid_move?([start, finish], false, true)
             else
                 i = 1
@@ -289,8 +290,8 @@ class Chess
                     altered_move = [move[0] * i, move[1] * i]
                     finish_index = [location_index[0] + altered_move[0], location_index[1] + altered_move[1]]
                     final_pos = convert_index_to_location(finish_index[0], finish_index[1])
-                    finish = [final_pos[1], final_pos[0].to_s]
-                    start = [location[1], location[0].to_s]
+                    finish = [final_pos[0], final_pos[1]]
+                    start = [location[0], location[1]]
                     if valid_move?([start, finish], false, true)
                         valid_moves.push(final_pos) 
                         i += 1
@@ -307,21 +308,21 @@ class Chess
         movement = get_movement(move)
         start = move[0]
         finish = move[1]
-        row = move[0][1].to_i
-        king = @board.get_piece(start[1].to_i, start[0])
+        row = move[0][0]
+        king = @board.get_piece(start[0], start[1])
         if movement[1] > 0
             rook = @board.get_piece(row, 'h')
-            rook_start = ['h', row]
-            rook_finish = ['f', row]
+            rook_start = [row, 'h']
+            rook_finish = [row, 'f']
         else
             rook = @board.get_piece(row, 'a')
-            rook_start = ['a', row]
-            rook_finish = ['d', row]
+            rook_start = [row, 'a']
+            rook_finish = [row, 'd']
         end
-        @board.remove_piece(start[1].to_i, start[0])
-        @board.remove_piece(rook_start[1], rook_start[0])
-        @board.add_piece(king, finish[1].to_i, finish[0])
-        @board.add_piece(rook, rook_finish[1], rook_finish[0])
+        @board.remove_piece(start[0], start[1])
+        @board.remove_piece(rook_start[0], rook_start[1])
+        @board.add_piece(king, finish[0], finish[1])
+        @board.add_piece(rook, rook_finish[0], rook_finish[1])
         king.moves += 1
         rook.moves += 1
     end
@@ -334,18 +335,18 @@ class Chess
             start = @previous_temp_move[0]
             finish = @previous_temp_move[1]
         end
-        piece = @board.get_piece(finish[1].to_i, finish[0])
+        piece = @board.get_piece(finish[0], finish[1])
         piece.moves -= 1
-        @board.remove_piece(finish[1].to_i, finish[0])
+        @board.remove_piece(finish[0], finish[1])
         if @last_removed_piece != nil
-            @board.add_piece(@last_removed_piece, finish[1].to_i, finish[0])
+            @board.add_piece(@last_removed_piece, finish[0], finish[1])
             if @current_player == @p1
                 @p2_pieces.push(@last_removed_piece)
             else
                 @p1_pieces.push(@last_removed_piece)
             end
         end
-        @board.add_piece(piece, start[1].to_i, start[0])
+        @board.add_piece(piece, start[0], start[1])
     end
 
     def move_without_check?(move)
@@ -414,8 +415,8 @@ class Chess
     end
 
     def get_path(start, finish)
-        starting_pos_index = convert_location_to_index(start[1].to_i, start[0])
-        end_pos_index = convert_location_to_index(finish[1].to_i, finish[0])
+        starting_pos_index = convert_location_to_index(start[0], start[1])
+        end_pos_index = convert_location_to_index(finish[0], finish[1])
         path = []
         while starting_pos_index != end_pos_index
             if end_pos_index[0] > starting_pos_index[0]
@@ -435,8 +436,8 @@ class Chess
 
     def valid_path?(start, finish)
         path = get_path(start, finish)
-        final_piece = @board.get_piece(finish[1].to_i, finish[0])
-        start_piece = @board.get_piece(start[1].to_i, start[0])
+        final_piece = @board.get_piece(finish[0], finish[1])
+        start_piece = @board.get_piece(start[0], start[1])
         path.each do |pos| 
             piece = @board.get_piece(pos[0], pos[1])
             if piece != nil
@@ -451,7 +452,7 @@ class Chess
     def within_bounds?(move)    
         starting_pos = move[0]
         end_pos = move[1]
-        return (@COLUMNS.include?(starting_pos[0]) && @COLUMNS.include?(end_pos[0])) && (@ROWS.include?(starting_pos[1]) && @ROWS.include?(end_pos[1]))
+        return (@COLUMNS.include?(starting_pos[1]) && @COLUMNS.include?(end_pos[1])) && (@ROWS.include?(starting_pos[0]) && @ROWS.include?(end_pos[0]))
     end
 
     def within_moveset?(piece, move)
@@ -460,7 +461,7 @@ class Chess
         if piece.is_a?(Pawn)
             special_move = piece.get_special_moves
             if special_move.include?(movement)
-                opposing_piece = @board.get_piece(move[1][1].to_i, move[1][0])
+                opposing_piece = @board.get_piece(move[1][0], move[1][1])
                 if en_passant?(move)
                     return true
                 elsif opposing_piece == nil
@@ -508,15 +509,15 @@ class Chess
     end
     
     def get_movement(move)
-        starting_pos_index = convert_location_to_index(move[0][1].to_i, move[0][0])
-        end_pos_index = convert_location_to_index(move[1][1].to_i, move[1][0])
+        starting_pos_index = convert_location_to_index(move[0][0], move[0][1])
+        end_pos_index = convert_location_to_index(move[1][0], move[1][1])
         movement = [end_pos_index[0] - starting_pos_index[0], end_pos_index[1] - starting_pos_index[1]]
         return movement
     end
 
     def valid_path_for_piece?(piece, move)
         if piece.is_a?(Pawn)
-            opposing_piece = @board.get_piece(move[1][1].to_i, move[1][0])
+            opposing_piece = @board.get_piece(move[1][0], move[1][1])
             movement = get_movement(move)
             if piece.get_special_moves.include?(movement)
                 if en_passant?(move)
@@ -534,7 +535,7 @@ class Chess
                 return false
             end
         else
-            final_piece = @board.get_piece(move[1][1].to_i, move[1][0])
+            final_piece = @board.get_piece(move[1][0], move[1][1])
             if final_piece != nil
                 if final_piece.white == piece.white
                     return false
