@@ -34,7 +34,7 @@ class Chess
         end
     end
 
-    def show_board
+    def show_board # Done
         puts ""
         puts "#{@p2.name}".center(44)
         puts "  -----------------------------------------\n"
@@ -44,14 +44,13 @@ class Chess
         puts ""
     end
 
-    def check_mate?
+    def check_mate? # Done
         # check_mate is when your king is currently in check and all possible moves you could make would leave you in check
         # to know if we are check mate we must first determine if we are in check
         if check?
             # generate a list of valid moves for all of our remaining pieces, then pipe those moves through valid_move?
             # with consideration for checks, if we have no valid moves available to us then we are in check mate
             valid_moves = {}
-            moves = 0
             @current_player_pieces.each do |piece|
                 location = @board.find_piece(piece)
                 location[0] = location[0].to_s
@@ -62,11 +61,11 @@ class Chess
                 valid_moves[start].each do |finish|
                     finish_move = [finish[1], finish[0].to_s]
                     if valid_move?([start_move, finish_move], true, true)
-                        moves += 1
+                        return false
                     end
                 end
             end
-            return moves == 0
+            return true
         else
             return false
         end
