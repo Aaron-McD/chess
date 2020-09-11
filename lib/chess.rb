@@ -6,6 +6,8 @@ require_relative "Serializable.rb"
 class Chess
     include Serializable
     attr_reader :current_player, :other_player
+    @@COLUMNS = ["a","b","c","d","e","f","g","h"]
+    @@ROWS = [1, 2, 3, 4, 5, 6, 7, 8]
     def initialize(player1, player2)
         if(player1.is_a?(Player) && player2.is_a?(Player))
             if player1.white == true
@@ -17,8 +19,6 @@ class Chess
             elsif player1.white == player2.white
                 raise "players must be of different colors"
             end
-            @COLUMNS = ["a","b","c","d","e","f","g","h"]
-            @ROWS = [1, 2, 3, 4, 5, 6, 7, 8]
             @board = Board.new
             fill_board
             @p1_pieces = get_pieces(true)
@@ -80,8 +80,8 @@ class Chess
             input = input.map { |item| item = item.split("") }
             bool_arry = []
             input.each do |arry|
-                bool_arry.push(@COLUMNS.any? { |char| char == arry[0] })
-                bool_arry.push(@ROWS.any? { |char| char.to_s == arry[1] })
+                bool_arry.push(@@COLUMNS.any? { |char| char == arry[0] })
+                bool_arry.push(@@ROWS.any? { |char| char.to_s == arry[1] })
             end
             correct_orientation = bool_arry.all? { |bool| bool == true }
             correct = correct_length && correct_orientation
@@ -364,9 +364,9 @@ class Chess
         i = 0
         8.times do
             piece = Pawn.new(true)
-            @board.add_piece(piece, 2, @COLUMNS[i])
+            @board.add_piece(piece, 2, @@COLUMNS[i])
             piece = Pawn.new(false)
-            @board.add_piece(piece, 7, @COLUMNS[i])
+            @board.add_piece(piece, 7, @@COLUMNS[i])
             i += 1
         end
         i = 1
@@ -452,7 +452,10 @@ class Chess
     def within_bounds?(move)    
         starting_pos = move[0]
         end_pos = move[1]
-        return (@COLUMNS.include?(starting_pos[1]) && @COLUMNS.include?(end_pos[1])) && (@ROWS.include?(starting_pos[0]) && @ROWS.include?(end_pos[0]))
+        return (@@COLUMNS.include?(starting_pos[1]) && 
+        @@COLUMNS.include?(end_pos[1])) && 
+        (@@ROWS.include?(starting_pos[0]) && 
+        @@ROWS.include?(end_pos[0]))
     end
 
     def within_moveset?(piece, move)

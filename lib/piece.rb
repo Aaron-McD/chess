@@ -2,24 +2,21 @@ require_relative "Serializable.rb"
 
 class Piece
     include Serializable
-    attr_reader :moveset, :limited, :white
+    attr_reader :white
     attr_accessor :moves
+    @@moveset = []
     def initialize(white)
-        @moveset = []
         @moves = 0
         @white = white # bool value to flag if the piece is on the white team or the black team
-        @limited = true # limited is the determination if the piece can only move the distance of the moveset or move the moveset any number of times
     end
 
     def get_moveset
-        return moveset
+        return @@moveset
     end
 end
 
 class Knight < Piece
-    def initialize(white)
-        super(white)
-        @moveset = [
+    @@moveset = [
             [2,1],
             [1,2],
             [-2,1],
@@ -29,6 +26,13 @@ class Knight < Piece
             [2,-1],
             [1,-2]
         ]
+    @@limited = true 
+    def initialize(white)
+        super(white)
+    end
+
+    def limited
+        return @@limited
     end
 
     def to_s
@@ -42,9 +46,7 @@ class Knight < Piece
 end
 
 class King < Piece
-    def initialize(white)
-        super(white)
-        @moveset = [
+    @@moveset = [
             [1,1],
             [-1,1],
             [1,-1],
@@ -54,6 +56,13 @@ class King < Piece
             [0,1],
             [0,-1]
         ]
+    @@limited = true 
+    def initialize(white)
+        super(white) 
+    end
+
+    def limited
+        return @@limited
     end
 
     def to_s
@@ -67,15 +76,19 @@ class King < Piece
 end
 
 class Rook < Piece
+    @@limited = false
+    @@moveset = [
+        [1,0],
+        [-1,0],
+        [0,1],
+        [0,-1]
+    ]
     def initialize(white)
-        super(white)
-        @limited = false
-        @moveset = [
-            [1,0],
-            [-1,0],
-            [0,1],
-            [0,-1]
-        ]
+        super(white) 
+    end
+
+    def limited
+        return @@limited
     end
 
     
@@ -90,18 +103,21 @@ class Rook < Piece
 end
 
 class Bishop < Piece
+    @@limited = false
+    @@moveset = [
+        [1,1],
+        [-1,1],
+        [1,-1],
+        [-1,-1],
+    ]
     def initialize(white)
         super(white)
-        @limited = false
-        @moveset = [
-            [1,1],
-            [-1,1],
-            [1,-1],
-            [-1,-1],
-        ]
     end
 
-    
+    def limited
+        return @@limited
+    end
+
     def to_s
         if white
             subscript = "\u2081"
@@ -113,22 +129,26 @@ class Bishop < Piece
 end
 
 class Queen < Piece
+    @@limited = false
+    @@moveset = [
+        [1,1],
+        [-1,1],
+        [1,-1],
+        [-1,-1],
+        [1,0],
+        [-1,0],
+        [0,1],
+        [0,-1]
+    ]
     def initialize(white)
         super(white)
-        @limited = false
-        @moveset = [
-            [1,1],
-            [-1,1],
-            [1,-1],
-            [-1,-1],
-            [1,0],
-            [-1,0],
-            [0,1],
-            [0,-1]
-        ]
+        
     end
 
-    
+    def limited
+        return @@limited
+    end
+
     def to_s
         if white
             subscript = "\u2081"
@@ -141,35 +161,39 @@ end
 
 class Pawn < Piece
     attr_reader :moveset_b, :moveset_w, :special_moveset_b, :special_moveset_w
+    @@limited = true
+    @@moveset_b = [[1,0]]
+    @@moveset_w = [[-1,0]]
+    @@special_moveset_b = [[1,1],[1,-1]]
+    @@special_moveset_w = [[-1,1],[-1,-1]]
     def initialize(white)
         super(white)
-        @limited = true
-        @moveset_b = [[1,0]]
-        @moveset_w = [[-1,0]]
-        @special_moveset_b = [[1,1],[1,-1]]
-        @special_moveset_w = [[-1,1],[-1,-1]]
+    end
+
+    def limited
+        return @@limited
     end
 
     def get_special_moves
         if @white
-            return @special_moveset_w
+            return @@special_moveset_w
         else
-            return @special_moveset_b
+            return @@special_moveset_b
         end
     end
     
     def get_moveset
         if @moves > 0
             if @white
-                return @moveset_w
+                return @@moveset_w
             else
-                return @moveset_b
+                return @@moveset_b
             end
         else
             if @white
-                return @moveset_w + [[-2,0]]
+                return @@moveset_w + [[-2,0]]
             else
-                return @moveset_b + [[2,0]]
+                return @@moveset_b + [[2,0]]
             end
         end
     end
