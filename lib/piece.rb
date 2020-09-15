@@ -4,14 +4,9 @@ class Piece
     include Serializable
     attr_reader :white
     attr_accessor :moves
-    @@moveset = []
     def initialize(white)
         @moves = 0
         @white = white # bool value to flag if the piece is on the white team or the black team
-    end
-
-    def get_moveset
-        return @@moveset
     end
 end
 
@@ -29,6 +24,10 @@ class Knight < Piece
     @@limited = true 
     def initialize(white)
         super(white)
+    end
+
+    def get_moveset
+        return @@moveset
     end
 
     def limited
@@ -61,6 +60,10 @@ class King < Piece
         super(white) 
     end
 
+    def get_moveset
+        return @@moveset
+    end
+
     def limited
         return @@limited
     end
@@ -91,6 +94,9 @@ class Rook < Piece
         return @@limited
     end
 
+    def get_moveset
+        return @@moveset
+    end
     
     def to_s
         if white
@@ -112,6 +118,10 @@ class Bishop < Piece
     ]
     def initialize(white)
         super(white)
+    end
+
+    def get_moveset
+        return @@moveset
     end
 
     def limited
@@ -142,7 +152,10 @@ class Queen < Piece
     ]
     def initialize(white)
         super(white)
-        
+    end
+
+    def get_moveset
+        return @@moveset
     end
 
     def limited

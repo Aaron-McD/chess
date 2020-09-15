@@ -14,6 +14,33 @@ def save_game(game)
     game.save_state(fname)
 end
 
+def promote_piece(game)
+    options = ['Q', 'R', 'B', 'K']
+    puts "You can now promote this pawn, what would you like it to become: "
+    puts "Q - Queen"
+    puts "R - Rook"
+    puts "B - Bishop"
+    puts "K - Knight"
+    print "-> "
+    input = gets.chomp.upcase
+    until options.include?(input)
+        print "Sorry that wasn't one of the options, just type a single letter: "
+        input = gets.chomp.upcase
+    end
+    piece = game.last_moved_piece
+    color = piece.white
+    if input == 'Q'
+        new_piece = Queen.new(color)
+    elsif input == 'R'
+        new_piece = Rook.new(color)
+    elsif input == 'B'
+        new_piece = Bishop.new(color)
+    else
+        new_piece = Knight.new(color)
+    end
+    game.promote(piece, new_piece)
+end
+
 def play_game(game)
     until game.check_mate?
         game.show_board
@@ -38,6 +65,9 @@ def play_game(game)
                 return nil
             else
                 play_move(game, move)
+                if game.promote?
+                    promote_piece(game)  
+                end
             end
         end
     end

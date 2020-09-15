@@ -68,6 +68,12 @@ class Chess
         end
     end
 
+    def last_moved_piece
+        prev_finish = @previous_official_move[1]
+        piece = @board.get_piece(prev_finish[0], prev_finish[1])
+        return piece
+    end
+
     def get_move
         # when a move is recieved it should be converted to a format that the board can easily use. Ex: [1, 'h']
         # or in other words [row.to_i, column] format and this should remain consistant through the program
@@ -98,6 +104,30 @@ class Chess
         move_start = [input[0][1].to_i, input[0][0]]
         move_end = [input[1][1].to_i, input[1][0]]
         return [move_start, move_end]
+    end
+
+    def promote?
+        piece = last_moved_piece
+        return false unless piece.is_a?(Pawn)
+        if piece.white
+            return @previous_official_move[1][0] == 8
+        else
+            return @previous_official_move[1][0] == 1
+        end
+    end
+
+    def promote(piece, new_piece)
+        location = @board.find_piece(piece)
+        @board.remove_piece(location[0], location[1])
+        @board.add_piece(new_piece, location[0], location[1])
+        puts new_piece.class
+        if piece.white
+            @p1_pieces.delete(piece)
+            @p1_pieces.push(new_piece)
+        else
+            @p2_pieces.delete(piece)
+            @p2_pieces.push(new_piece)
+        end
     end
 
     def check?
