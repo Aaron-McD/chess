@@ -24,6 +24,10 @@ class Chess_Node
     @children.push(child)
   end
 
+  def remove_child(child)
+    @children.delete(child)
+  end
+
   def to_s
     return "#{@move}, #{@base_value}"
   end
