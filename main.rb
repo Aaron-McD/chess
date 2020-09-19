@@ -160,7 +160,7 @@ def load_game
     end
 end
 
-a1 = Chess_AI.new(true, 2)
+a1 = Player.new("Aaron", true)
 a2 = Chess_AI.new(false, 0)
 game = Chess.new(a1, a2)
 play_game(game)

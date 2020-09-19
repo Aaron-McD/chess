@@ -40,7 +40,7 @@ class Chess
         puts ""
     end
 
-    def check_mate?
+    def check_mate? #1000 iterations take 1.539 seconds
         # check_mate is when your king is currently in check and all possible moves you could make would leave you in check
         # to know if we are check mate we must first determine if we are in check
         if check?
@@ -129,7 +129,7 @@ class Chess
         end
     end
 
-    def check?
+    def check? #1000 iterations take 1.538 seconds
         opposing_pieces = @current_player == @p1 ? @p2_pieces : @p1_pieces
         valid_movesets = []
         opposing_pieces.each do |piece|
@@ -155,10 +155,13 @@ class Chess
         # valid_move? is a checklist for certain criteria to declare a move as valid
         piece = @board.get_piece(move[0][0], move[0][1])
         # check that the move is within the givin rows and columns available
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless within_bounds?(move)
             puts "That move is out of bounds." unless silence
             return false 
         end
+        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        puts "within_bounds took #{finish - start} seconds"
         # check that there is a piece at the starting location
         if piece == nil
             puts "There is no piece at that starting location." unless silence
@@ -170,22 +173,31 @@ class Chess
             return false
         end
         # check that the piece is trying to be moved within its moveset
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless within_moveset?(piece, move)
             puts "That isn't a valid move for that piece." unless silence
             return false
         end
+        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        puts "within_moveset took #{finish - start} seconds"
         # check that it has a valid path
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless valid_path_for_piece?(piece, move)
             puts "There is a piece in the way." unless silence
             return false
         end
+        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        puts "valid_path took #{finish - start} seconds"
         # check that the movement won't put the player in check
+        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         if player_matters
             unless move_without_check?(move)
                 puts "That move would put you in check" unless silence
                 return false
             end
         end
+        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        puts "move_without_check took #{finish - start} seconds"
         return true
     end
 
