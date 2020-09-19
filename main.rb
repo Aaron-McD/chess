@@ -1,4 +1,5 @@
 require_relative "lib/chess.rb"
+require_relative "lib/chess_ai.rb"
 
 $players = []
 COMMANDS = ['l', 'n', 'e']
@@ -16,27 +17,32 @@ end
 
 def promote_piece(game)
     options = ['Q', 'R', 'B', 'K']
-    puts "You can now promote this pawn, what would you like it to become: "
-    puts "Q - Queen"
-    puts "R - Rook"
-    puts "B - Bishop"
-    puts "K - Knight"
-    print "-> "
-    input = gets.chomp.upcase
-    until options.include?(input)
-        print "Sorry that wasn't one of the options, just type a single letter: "
-        input = gets.chomp.upcase
-    end
     piece = game.last_moved_piece
+    player = piece.white == true ? game.p1 : game.p2
     color = piece.white
-    if input == 'Q'
+    if player.is_a?(Chess_AI)
         new_piece = Queen.new(color)
-    elsif input == 'R'
-        new_piece = Rook.new(color)
-    elsif input == 'B'
-        new_piece = Bishop.new(color)
     else
-        new_piece = Knight.new(color)
+        puts "You can now promote this pawn, what would you like it to become: "
+        puts "Q - Queen"
+        puts "R - Rook"
+        puts "B - Bishop"
+        puts "K - Knight"
+        print "-> "
+        input = gets.chomp.upcase
+        until options.include?(input)
+            print "Sorry that wasn't one of the options, just type a single letter: "
+            input = gets.chomp.upcase
+        end
+        if input == 'Q'
+            new_piece = Queen.new(color)
+        elsif input == 'R'
+            new_piece = Rook.new(color)
+        elsif input == 'B'
+            new_piece = Bishop.new(color)
+        else
+            new_piece = Knight.new(color)
+        end
     end
     game.promote(piece, new_piece)
 end
@@ -45,10 +51,18 @@ def play_game(game)
     until game.check_mate?
         game.show_board
         puts "#{game.current_player.name} is in check!" if game.check?
-        puts "It is #{game.current_player.name}'s turn, please type in your move in '<location from> - <location to>' format."
-        puts "Example a4 - a5 would be a move for a4 to a5. Type 'save' to save the current game state."
-        print "-> "
+        if game.current_player.is_a?(Chess_AI)
+            puts "It is #{game.current_player.name}'s turn, they are currently thinking..."
+        else
+            puts "It is #{game.current_player.name}'s turn, please type in your move in '<location from> - <location to>' format."
+            puts "Example a4 - a5 would be a move for a4 to a5. Type 'save' to save the current game state."
+            print "-> "
+        end
         move = game.get_move
+        if game.current_player.is_a?(Chess_AI)
+            puts "The AI will go with #{move[0][1]}#{move[0][0].to_s} - #{move[1][1]}#{move[1][0].to_s}!"
+            sleep(2)
+        end
         if move == 'save'
             save_game(game)
             return nil
@@ -146,7 +160,13 @@ def load_game
     end
 end
 
+a1 = Chess_AI.new(true, 1)
+a2 = Chess_AI.new(false, 0)
+game = Chess.new(a1, a2)
+play_game(game)
+
 # main loop for using the API
+=begin
 while true
     show_main_menu
     print "-> "
@@ -165,3 +185,4 @@ while true
         play_game(game)
     end
 end
+=end

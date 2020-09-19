@@ -5,33 +5,29 @@ require_relative "Serializable.rb"
 
 class Chess
     include Serializable
-    attr_reader :current_player, :other_player
+    attr_reader :current_player, :other_player, :current_player_pieces, :board, :p1_pieces, :p2_pieces, :p1, :p2
     @@COLUMNS = ["a","b","c","d","e","f","g","h"]
     @@ROWS = [1, 2, 3, 4, 5, 6, 7, 8]
     def initialize(player1, player2)
-        if(player1.is_a?(Player) && player2.is_a?(Player))
-            if player1.white == true
-                @p1 = player1
-                @p2 = player2
-            elsif player2.white == true
-                @p1 = player2
-                @p2 = player1
-            elsif player1.white == player2.white
-                raise "players must be of different colors"
-            end
-            @board = Board.new
-            fill_board
-            @p1_pieces = get_pieces(true)
-            @p2_pieces = get_pieces(false)
-            @current_player = @p1
-            @current_player_pieces = @p1_pieces
-            @other_player = @p2
-            @previous_official_move = []
-            @previous_temp_move = []
-            @last_removed_piece = nil
-        else
-            raise "The players passed to chess object must be a Player object"
+        if player1.white == true
+            @p1 = player1
+            @p2 = player2
+        elsif player2.white == true
+            @p1 = player2
+            @p2 = player1
+        elsif player1.white == player2.white
+            raise "players must be of different colors"
         end
+        @board = Board.new
+        fill_board
+        @p1_pieces = get_pieces(true)
+        @p2_pieces = get_pieces(false)
+        @current_player = @p1
+        @current_player_pieces = @p1_pieces
+        @other_player = @p2
+        @previous_official_move = []
+        @previous_temp_move = []
+        @last_removed_piece = nil
     end
 
     def show_board
@@ -77,6 +73,9 @@ class Chess
     def get_move
         # when a move is recieved it should be converted to a format that the board can easily use. Ex: [1, 'h']
         # or in other words [row.to_i, column] format and this should remain consistant through the program
+        if @current_player.is_a?(Chess_AI)
+            return @current_player.make_move(self)
+        end
         input = gets.chomp.downcase
         correct = false
         until correct
@@ -243,6 +242,61 @@ class Chess
         return self
     end
 
+    def generate_valid_moveset(piece)
+        location = @board.find_piece(piece)
+        location_index = convert_location_to_index(location[0], location[1])
+        valid_moves = []
+        moveset = piece.get_moveset
+        moveset += piece.get_special_moves if piece.is_a?(Pawn)
+        moveset.each do |move|
+            if piece.limited
+                finish_index = [location_index[0] + move[0], location_index[1] + move[1]]
+                final_pos = convert_index_to_location(finish_index[0], finish_index[1])
+                finish = [final_pos[0], final_pos[1]]
+                start = [location[0], location[1]]
+                valid_moves.push(final_pos) if valid_move?([start, finish], false, true)
+            else
+                i = 1
+                while i < 8
+                    altered_move = [move[0] * i, move[1] * i]
+                    finish_index = [location_index[0] + altered_move[0], location_index[1] + altered_move[1]]
+                    final_pos = convert_index_to_location(finish_index[0], finish_index[1])
+                    finish = [final_pos[0], final_pos[1]]
+                    start = [location[0], location[1]]
+                    if valid_move?([start, finish], false, true)
+                        valid_moves.push(final_pos) 
+                        i += 1
+                    else
+                        break
+                    end
+                end
+            end
+        end
+        return valid_moves
+    end
+
+    def undo_last_move(official)
+        if official
+            start = @previous_official_move[0]
+            finish = @previous_official_move[1]
+        else
+            start = @previous_temp_move[0]
+            finish = @previous_temp_move[1]
+        end
+        piece = @board.get_piece(finish[0], finish[1])
+        piece.moves -= 1
+        @board.remove_piece(finish[0], finish[1])
+        if @last_removed_piece != nil
+            @board.add_piece(@last_removed_piece, finish[0], finish[1])
+            if @current_player == @p1
+                @p2_pieces.push(@last_removed_piece)
+            else
+                @p1_pieces.push(@last_removed_piece)
+            end
+        end
+        @board.add_piece(piece, start[0], start[1])
+    end
+
     private
 
     def get_pieces(white)
@@ -265,6 +319,7 @@ class Chess
         col = move[0][1]
         row = move[0][0]
         king = @board.get_piece(row, col)
+        return false unless king.is_a?(King)
         return false if king.moves != 0
         if movement[1] > 0
             rook = @board.get_piece(row, 'h')
@@ -301,39 +356,6 @@ class Chess
         end
     end
 
-    def generate_valid_moveset(piece)
-        location = @board.find_piece(piece)
-        location_index = convert_location_to_index(location[0], location[1])
-        valid_moves = []
-        moveset = piece.get_moveset
-        moveset += piece.get_special_moves if piece.is_a?(Pawn)
-        moveset.each do |move|
-            if piece.limited
-                finish_index = [location_index[0] + move[0], location_index[1] + move[1]]
-                final_pos = convert_index_to_location(finish_index[0], finish_index[1])
-                finish = [final_pos[0], final_pos[1]]
-                start = [location[0], location[1]]
-                valid_moves.push(final_pos) if valid_move?([start, finish], false, true)
-            else
-                i = 1
-                while i < 8
-                    altered_move = [move[0] * i, move[1] * i]
-                    finish_index = [location_index[0] + altered_move[0], location_index[1] + altered_move[1]]
-                    final_pos = convert_index_to_location(finish_index[0], finish_index[1])
-                    finish = [final_pos[0], final_pos[1]]
-                    start = [location[0], location[1]]
-                    if valid_move?([start, finish], false, true)
-                        valid_moves.push(final_pos) 
-                        i += 1
-                    else
-                        break
-                    end
-                end
-            end
-        end
-        return valid_moves
-    end
-
     def execute_castle(move)
         movement = get_movement(move)
         start = move[0]
@@ -355,28 +377,6 @@ class Chess
         @board.add_piece(rook, rook_finish[0], rook_finish[1])
         king.moves += 1
         rook.moves += 1
-    end
-
-    def undo_last_move(official)
-        if official
-            start = @previous_official_move[0]
-            finish = @previous_official_move[1]
-        else
-            start = @previous_temp_move[0]
-            finish = @previous_temp_move[1]
-        end
-        piece = @board.get_piece(finish[0], finish[1])
-        piece.moves -= 1
-        @board.remove_piece(finish[0], finish[1])
-        if @last_removed_piece != nil
-            @board.add_piece(@last_removed_piece, finish[0], finish[1])
-            if @current_player == @p1
-                @p2_pieces.push(@last_removed_piece)
-            else
-                @p1_pieces.push(@last_removed_piece)
-            end
-        end
-        @board.add_piece(piece, start[0], start[1])
     end
 
     def move_without_check?(move)

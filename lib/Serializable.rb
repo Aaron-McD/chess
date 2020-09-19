@@ -16,6 +16,8 @@ module Serializable
       for key, value in object
         if key == "Player"
           obj = Player.new('placeholder', true)
+        elsif key == "Chess_AI"
+          obj = Chess_AI.new(true, 0)
         elsif key == "Board"
           obj = Board.new
         elsif key == "Pawn"
