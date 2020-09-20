@@ -155,13 +155,13 @@ class Chess
         # valid_move? is a checklist for certain criteria to declare a move as valid
         piece = @board.get_piece(move[0][0], move[0][1])
         # check that the move is within the givin rows and columns available
-        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless within_bounds?(move)
             puts "That move is out of bounds." unless silence
             return false 
         end
-        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        puts "within_bounds took #{finish - start} seconds"
+        #finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #puts "within_bounds took #{finish - start} seconds"
         # check that there is a piece at the starting location
         if piece == nil
             puts "There is no piece at that starting location." unless silence
@@ -173,13 +173,13 @@ class Chess
             return false
         end
         # check that the piece is trying to be moved within its moveset
-        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless within_moveset?(piece, move)
             puts "That isn't a valid move for that piece." unless silence
             return false
         end
-        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        puts "within_moveset took #{finish - start} seconds"
+        #finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #puts "within_moveset took #{finish - start} seconds"
         # check that it has a valid path
         start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         unless valid_path_for_piece?(piece, move)
@@ -189,15 +189,15 @@ class Chess
         finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         puts "valid_path took #{finish - start} seconds"
         # check that the movement won't put the player in check
-        start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         if player_matters
             unless move_without_check?(move)
                 puts "That move would put you in check" unless silence
                 return false
             end
         end
-        finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        puts "move_without_check took #{finish - start} seconds"
+        #finish = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        #puts "move_without_check took #{finish - start} seconds"
         return true
     end
 
@@ -500,7 +500,41 @@ class Chess
         @@ROWS.include?(end_pos[0]))
     end
 
+    def get_base_movement(movement)
+        if movement[0] == 0 || movement[1] == 0
+            zero_value = movement[0] == 0 ? 0 : 1
+            non_zero_value = movement[0] != 0 ? 0 : 1
+            if movement[non_zero_value] > 0
+                base_move = [1,1]
+            else
+                base_move = [-1,-1]
+            end
+            base_move[zero_value] = 0
+        else
+            if movement[0] % movement[1] != 0
+                return movement
+            else
+                base_value = movement[0] > 0 ? movement[0] : movement[0] * -1
+                base_move = [0,0]
+                base_move[0] = movement[0].to_f / base_value.to_f
+                base_move[1] = movement[1].to_f / base_value.to_f
+            end
+        end
+        return base_move
+    end
+
     def within_moveset?(piece, move)
+        moveset = piece.get_moveset
+        moveset += piece.get_special_moves if piece.is_a?(Pawn) || piece.is_a?(King)
+        movement = get_movement(move)
+        unless piece.limited
+            movement = get_base_movement(movement)
+        end
+        return moveset.include?(movement)
+    end
+    
+=begin
+    def within_moveset?(piece, move) old
         moveset = piece.get_moveset
         movement = get_movement(move)
         if piece.is_a?(Pawn)
@@ -552,6 +586,7 @@ class Chess
         end
         return true
     end
+=end
     
     def get_movement(move)
         starting_pos_index = convert_location_to_index(move[0][0], move[0][1])

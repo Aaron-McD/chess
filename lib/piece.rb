@@ -55,9 +55,14 @@ class King < Piece
             [0,1],
             [0,-1]
         ]
+    @@special_moveset = [[0,2],[0,-2]]
     @@limited = true 
     def initialize(white)
         super(white) 
+    end
+
+    def get_special_moves
+        return @@special_moveset
     end
 
     def get_moveset
