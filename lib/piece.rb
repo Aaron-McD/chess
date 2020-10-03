@@ -26,6 +26,17 @@ class Knight < Piece
         super(white)
     end
 
+    def within_range?(piece_location, other_piece_location)
+        @@moveset.each do |move|
+            new_col = piece_location[0] + move[0]
+            new_row = piece_location[1] + move[1]
+            if [new_col, new_row] == other_piece_location
+                return true
+            end
+        end
+        return false
+    end
+
     def get_moveset
         return @@moveset
     end
@@ -61,6 +72,17 @@ class King < Piece
         super(white) 
     end
 
+    def within_range?(piece_location, other_piece_location)
+        @@moveset.each do |move|
+            new_col = piece_location[0] + move[0]
+            new_row = piece_location[1] + move[1]
+            if [new_col, new_row] == other_piece_location
+                return true
+            end
+        end
+        return false
+    end
+
     def get_special_moves
         return @@special_moveset
     end
@@ -91,6 +113,13 @@ class Rook < Piece
         [0,1],
         [0,-1]
     ]
+
+    def within_range?(piece_location, other_piece_location)
+        new_col = other_piece_location[0] - piece_location[0]
+        new_row = other_piece_location[1] - piece_location[1]
+        return new_row == 0 || new_col == 0
+    end
+
     def initialize(white)
         super(white) 
     end
@@ -121,6 +150,14 @@ class Bishop < Piece
         [1,-1],
         [-1,-1],
     ]
+
+    def within_range?(piece_location, other_piece_location)
+        new_col = other_piece_location[0] - piece_location[0]
+        new_row = other_piece_location[1] - piece_location[1]
+        return false if new_row == 0 || new_col == 0
+        return new_col % new_row == 0
+    end
+
     def initialize(white)
         super(white)
     end
@@ -155,6 +192,17 @@ class Queen < Piece
         [0,1],
         [0,-1]
     ]
+
+    def within_range?(piece_location, other_piece_location)
+        new_col = other_piece_location[0] - piece_location[0]
+        new_row = other_piece_location[1] - piece_location[1]
+        if new_row == 0 || new_col == 0
+            return true
+        else
+            return new_col % new_row == 0
+        end
+    end
+
     def initialize(white)
         super(white)
     end
@@ -184,6 +232,18 @@ class Pawn < Piece
     @@moveset_w = [[-1,0]]
     @@special_moveset_b = [[1,1],[1,-1]]
     @@special_moveset_w = [[-1,1],[-1,-1]]
+
+    def within_range?(piece_location, other_piece_location)
+        self.get_moveset.each do |move|
+            new_col = piece_location[0] + move[0]
+            new_row = piece_location[1] + move[1]
+            if [new_col, new_row] == other_piece_location
+                return true
+            end
+        end
+        return false
+    end
+    
     def initialize(white)
         super(white)
     end

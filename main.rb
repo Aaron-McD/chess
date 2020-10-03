@@ -118,12 +118,36 @@ def get_command(commands)
 end
 
 def create_new_game
-    print "Player 1 enter your name: "
-    p1_name = get_player
-    print "Player 2 enter your name: "
-    p2_name = get_player
-    $players = []
-    return Chess.new(Player.new(p1_name, true), Player.new(p2_name, false))
+    puts "Would you like to play against an AI or a Player?"
+    puts "1 - AI"
+    puts "2 - Player"
+    print "-> "
+    input = gets.chomp.to_i
+    puts input
+    until input == 1 || input == 2
+        print "Sorry that isn't an option, please type a 1 or 2: "
+        input = gets.chomp.to_i
+    end
+    if input == 1
+        print "Please enter your name: "
+        p1_name = get_player
+        puts "Enter the difficulty you wish to face: "
+        puts "1 - 3 for easy, medium or hard."
+        print "-> "
+        input = gets.chomp.to_i
+        until [1,2,3].include?(input)
+            print "Please enter 1, 2 or 3 for the difficulty: "
+            input = gets.chomp.to_i
+        end
+        return Chess.new(Player.new(p1_name, true), Chess_AI.new(false, input - 1))
+    else
+        print "Player 1 enter your name: "
+        p1_name = get_player
+        print "Player 2 enter your name: "
+        p2_name = get_player
+        $players = []
+        return Chess.new(Player.new(p1_name, true), Player.new(p2_name, false))
+    end
 end
 
 def load_game
@@ -160,13 +184,7 @@ def load_game
     end
 end
 
-a1 = Player.new("Aaron", true)
-a2 = Chess_AI.new(false, 0)
-game = Chess.new(a1, a2)
-play_game(game)
-
 # main loop for using the API
-=begin
 while true
     show_main_menu
     print "-> "
@@ -185,4 +203,3 @@ while true
         play_game(game)
     end
 end
-=end

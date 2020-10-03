@@ -87,6 +87,21 @@ class Chess_AI
     return ai_score - other_score
   end
 
+  def clean_children(node)
+    useless_nodes = []
+    node.children.each do |child|
+      useless_nodes.push(child) if node.base_value == child.base_value
+    end
+    amount = useless_nodes.length
+    while amount > 5
+      index = rand(useless_nodes.length)
+      child = useless_nodes[index]
+      node.remove_child(child)
+      useless_nodes.delete(child)
+      amount -= 1
+    end
+  end
+
   def build_tree(game, prev_move, depth)
     root = Chess_Node.new(prev_move, nil, get_board_value(game))
     game.change_player unless prev_move == nil
